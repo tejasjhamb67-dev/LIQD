@@ -23,6 +23,7 @@ export const DEFAULTS = {
   appetite: 3,
   tolerance: 3,
   constraints: [],
+  glide: false,             // de-risk toward the conservative landing mix in the final years
   chosenModel: null,        // 'conservative' | 'balanced' | 'aggressive'
   customWeights: null,      // set from Rebalancing Studio
   connections: [],          // integration keys

@@ -210,6 +210,28 @@ export function contributionSchedule(p, years) {
   return out;
 }
 
+/* =============== 5b. Glide path =============== */
+/** Per-year weights/mu/sigma: hold the chosen policy, then de-risk linearly
+    toward the conservative landing mix over the final window (max 8 years,
+    never more than half the tenure). This is the target-date-fund mechanic:
+    sequence-of-returns risk is highest when the corpus is largest. */
+export function glideSchedule(model, weights, years) {
+  const landing = { eq: 28, fi: 52, alt: 16, tac: 4 };
+  const window = Math.min(8, Math.floor(years / 2));
+  const startYear = years - window;
+  const out = [];
+  for (let t = 1; t <= years; t++) {
+    let w = { ...weights };
+    if (window > 0 && t > startYear) {
+      const f = (t - startYear) / window;
+      for (const k of ['eq', 'fi', 'alt', 'tac']) w[k] = Math.round(weights[k] + (landing[k] - weights[k]) * f);
+    }
+    const st = statsForWeights(model, w);
+    out.push({ t, weights: w, mu: st.mu, sigma: st.sigma });
+  }
+  return { rows: out, startYear, window };
+}
+
 /* =============== 6. Monte Carlo projections =============== */
 // mulberry32 PRNG — deterministic across screens for the same inputs
 function rng(seed) {
@@ -224,18 +246,20 @@ function rng(seed) {
 const PCTS = [['p10', 0.10], ['p25', 0.25], ['p50', 0.50], ['p75', 0.75], ['p90', 0.90]];
 
 /** Simulate wealth paths. contribs = output of contributionSchedule.
-    Returns { rows: [{t, invested, p10..p90}], terminal: sorted final values } */
+    mu/sigma may be scalars or per-year arrays (glide path).
+    Returns { rows: [{t, invested, p10..p90}], terminal: sorted final values,
+    paths: unsorted final values (for chaining into decumulation) } */
 export function simulate(corpus, contribs, mu, sigma, years, { sims = 2000, seed = 20260709 } = {}) {
-  const m = mu / 100, s = sigma / 100;
-  const drift = m - s * s / 2;
+  const muAt = t => (Array.isArray(mu) ? mu[Math.min(t, mu.length - 1)] : mu) / 100;
+  const sigAt = t => (Array.isArray(sigma) ? sigma[Math.min(t, sigma.length - 1)] : sigma) / 100;
   const rand = rng(seed);
-  // pre-draw normals: sims × years via Box–Muller
   const paths = new Array(sims).fill(0).map(() => corpus);
   const rows = [{ t: 0, invested: corpus, p10: corpus, p25: corpus, p50: corpus, p75: corpus, p90: corpus }];
   let invested = corpus;
   const yearVals = new Float64Array(sims);
   for (let t = 1; t <= years; t++) {
     const c = contribs[t - 1] ? contribs[t - 1].annual : 0;
+    const m = muAt(t - 1), s = sigAt(t - 1), drift = m - s * s / 2;
     invested += c;
     for (let i = 0; i < sims; i++) {
       const u1 = Math.max(rand(), 1e-12), u2 = rand();
@@ -250,7 +274,46 @@ export function simulate(corpus, contribs, mu, sigma, years, { sims = 2000, seed
     for (const [k, q] of PCTS) row[k] = sorted[Math.min(sims - 1, Math.floor(q * sims))];
     rows.push(row);
   }
-  return { rows, terminal: Float64Array.from(paths).sort() };
+  return { rows, terminal: Float64Array.from(paths).sort(), paths };
+}
+
+/** Decumulation: continue each accumulation path through retirement with an
+    inflation-indexed monthly withdrawal, on a conservative post-tenure mix.
+    Returns success probability (never depleted), percentile rows, estate stats. */
+export function simulateRetirement(startPaths, withdrawalMonthly, retYears,
+  { mu = 9.1, sigma = 6.5, inflation = 5, sims = startPaths.length, seed = 987654321 } = {}) {
+  const m = mu / 100, s = sigma / 100, drift = m - s * s / 2;
+  const rand = rng(seed);
+  const v = Float64Array.from(startPaths.slice(0, sims));
+  const depleted = new Uint8Array(sims);
+  const rows = [];
+  const yearVals = new Float64Array(sims);
+  let wd = withdrawalMonthly * 12;
+  for (let t = 1; t <= retYears; t++) {
+    for (let i = 0; i < sims; i++) {
+      if (depleted[i]) { yearVals[i] = 0; continue; }
+      const u1 = Math.max(rand(), 1e-12), u2 = rand();
+      const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+      const G = Math.exp(drift + s * z);
+      v[i] = v[i] * G - wd * Math.sqrt(G);   // withdrawals spread through the year
+      if (v[i] <= 0) { v[i] = 0; depleted[i] = 1; }
+      yearVals[i] = v[i];
+    }
+    const sorted = Float64Array.from(yearVals).sort();
+    const row = { t };
+    for (const [k, q] of PCTS) row[k] = sorted[Math.min(sims - 1, Math.floor(q * sims))];
+    rows.push(row);
+    wd *= 1 + inflation / 100;               // withdrawal keeps pace with prices
+  }
+  let ok = 0; for (let i = 0; i < sims; i++) if (!depleted[i]) ok++;
+  // never print certainty — the tails are always live
+  const successPct = Math.min(99, Math.round(100 * ok / sims));
+  const sortedEnd = Float64Array.from(v).sort();
+  return {
+    rows, successPct,
+    medianEstate: sortedEnd[Math.floor(sims / 2)],
+    p10Estate: sortedEnd[Math.floor(sims * 0.1)],
+  };
 }
 
 /** goal probability straight from the simulated terminal distribution */

@@ -11,6 +11,7 @@ import { renderScenario } from './pages/scenario.js';
 import { renderAdvantage } from './pages/advantage.js';
 import { renderUniverse } from './pages/universe.js';
 import { renderIntegrations } from './pages/integrations.js';
+import { renderIPS } from './pages/ips.js';
 
 const ICONS = {
   overview: '<svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg>',
@@ -18,6 +19,7 @@ const ICONS = {
   growth: '<svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 20h18M4 16l5-5 4 3 7-8"/><path d="M16 6h4v4"/></svg>',
   rebalance: '<svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h13M13 3l4 4-4 4M20 17H7M11 13l-4 4 4 4"/></svg>',
   scenario: '<svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>',
+  ips: '<svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 3h8l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v4h4M9 12h6M9 16h6"/></svg>',
   universe: '<svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.6"/><path d="M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>',
   integrations: '<svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 7H6a3 3 0 0 0 0 6h3M15 7h3a3 3 0 0 1 0 6h-3M8 10h8"/><path d="M12 13v5a3 3 0 0 0 3 3"/></svg>',
   advantage: '<svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2 3 7v6c0 5 3.8 8.4 9 9 5.2-.6 9-4 9-9V7l-9-5z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>',
@@ -30,6 +32,7 @@ const ROUTES = [
   { hash: 'growth', label: 'Growth & Projections', render: renderGrowth, gated: true },
   { hash: 'rebalance', label: 'Rebalancing Studio', render: renderRebalance, gated: true },
   { hash: 'scenario', label: 'Scenario Lab', render: renderScenario, gated: true },
+  { hash: 'ips', label: 'Policy Statement', render: renderIPS, gated: true },
   { hash: 'universe', label: 'Product Universe', render: renderUniverse, section: 'Explore' },
   { hash: 'integrations', label: 'Integrations', render: renderIntegrations },
   { hash: 'advantage', label: 'LIQD Advantage', render: renderAdvantage },

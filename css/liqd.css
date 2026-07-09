@@ -280,6 +280,15 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px; }
 .avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 720; color: #fff; font-size: 14px; }
 
+/* ---------- print (Investment Policy Statement) ---------- */
+@media print {
+  body { background: #fff; }
+  .sidebar, .no-print { display: none !important; }
+  .main { padding: 0; max-width: none; }
+  .ips-doc { border: none; box-shadow: none; padding: 0; }
+  .btn { display: none; }
+}
+
 @media (max-width: 1000px) {
   #app { flex-direction: column; }
   .sidebar { position: static; width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; }
