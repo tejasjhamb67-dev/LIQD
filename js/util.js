@@ -53,10 +53,10 @@ export const tipRow = (label, value) => `<div class="tr"><span>${label}</span><b
 
 /* ---------- misc ---------- */
 export const CLASS_META = {
-  eq:  { key: 'eq',  label: 'Equities',      color: 'var(--eq)',  hex: '#3987e5' },
-  fi:  { key: 'fi',  label: 'Fixed Income',  color: 'var(--fi)',  hex: '#199e70' },
-  alt: { key: 'alt', label: 'Alternatives',  color: 'var(--alt)', hex: '#9085e9' },
-  tac: { key: 'tac', label: 'Tactical',      color: 'var(--tac)', hex: '#c98500' },
+  eq:  { key: 'eq',  label: 'Equities',      color: 'var(--eq)',  hex: '#2a78d6' },
+  fi:  { key: 'fi',  label: 'Fixed Income',  color: 'var(--fi)',  hex: '#1baf7a' },
+  alt: { key: 'alt', label: 'Alternatives',  color: 'var(--alt)', hex: '#4a3aa7' },
+  tac: { key: 'tac', label: 'Tactical',      color: 'var(--tac)', hex: '#eda100' },
 };
 export const CLASS_ORDER = ['eq', 'fi', 'alt', 'tac'];
 

@@ -2,25 +2,25 @@
 
 /* ---------------- investor tiers ---------------- */
 export const INVESTOR_TYPES = [
-  { key: 'henry', label: 'HENRY', glyph: '⚡', min: 1e6,
+  { key: 'henry', label: 'HENRY', glyph: 'HEN', min: 1e6,
     desc: 'High Earner, Not Rich Yet · ₹10L–₹1Cr investable · the LIQD core' },
-  { key: 'hni', label: 'HNI', glyph: '◆', min: 1e7,
+  { key: 'hni', label: 'HNI', glyph: 'HNI', min: 1e7,
     desc: '₹1Cr–₹25Cr · unlocks PMS, AIF & structured credit' },
-  { key: 'uhni', label: 'UHNI', glyph: '❖', min: 25e7,
+  { key: 'uhni', label: 'UHNI', glyph: 'UHNI', min: 25e7,
     desc: '₹25Cr+ · unlisted, pre-IPO, bespoke mandates' },
-  { key: 'family', label: 'Family Office', glyph: '⬡', min: 50e7,
+  { key: 'family', label: 'Family Office', glyph: 'FO', min: 50e7,
     desc: 'Multi-entity, multi-generation · reporting & governance' },
-  { key: 'nri', label: 'NRI / Global Indian', glyph: '✈', min: 1e6,
+  { key: 'nri', label: 'NRI / Global Indian', glyph: 'NRI', min: 1e6,
     desc: 'NRE/NRO routing, FEMA-aware universe, GIFT City access' },
 ];
 
 export const GOALS = [
-  { key: 'wealth', label: 'Long-term wealth creation', glyph: '📈', desc: 'Compound aggressively; no fixed liability at the end' },
-  { key: 'fire', label: 'Financial independence (FIRE)', glyph: '🔥', desc: 'Build a corpus that replaces salary income' },
-  { key: 'home', label: 'Home / large purchase', glyph: '🏠', desc: 'A defined amount on a defined date' },
-  { key: 'education', label: "Children's education abroad", glyph: '🎓', desc: 'USD-linked liability — global sleeve matters' },
-  { key: 'preserve', label: 'Preserve & beat inflation', glyph: '🛡', desc: 'Protect what exists; grow it quietly' },
-  { key: 'legacy', label: 'Legacy / generational transfer', glyph: '🏛', desc: 'Multi-decade horizon, estate-aware structuring' },
+  { key: 'wealth', label: 'Long-term wealth creation', desc: 'Compound aggressively; no fixed liability at the end' },
+  { key: 'fire', label: 'Financial independence (FIRE)', desc: 'Build a corpus that replaces salary income' },
+  { key: 'home', label: 'Home / large purchase', desc: 'A defined amount on a defined date' },
+  { key: 'education', label: "Children's education abroad", desc: 'USD-linked liability — global sleeve matters' },
+  { key: 'preserve', label: 'Preserve & beat inflation', desc: 'Protect what exists; grow it quietly' },
+  { key: 'legacy', label: 'Legacy / generational transfer', desc: 'Multi-decade horizon, estate-aware structuring' },
 ];
 
 export const APPETITE = [

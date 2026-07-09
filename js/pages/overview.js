@@ -1,7 +1,7 @@
 // LIQD — Overview: client info, corpus, risk profile, portfolio snapshot
 
 import { S, active, models } from '../state.js';
-import { riskScore, project, goalProbability, runScenario } from '../engine.js';
+import { riskScore, simulate, goalProbabilityMC, contributionSchedule, runScenario, riskContributions } from '../engine.js';
 import { SCENARIOS, INVESTOR_TYPES, GOALS } from '../data.js';
 import { el, esc, fmtINR, fmtPct, CLASS_META, CLASS_ORDER } from '../util.js';
 import { donut, sparkline, meter } from '../charts.js';
@@ -10,9 +10,11 @@ import { go } from '../app.js';
 export function renderOverview(main) {
   const m = active();
   const rs = riskScore(S);
-  const proj = project(S.corpus, S.monthly, m.mu, m.sigma, S.tenure);
+  const sched = contributionSchedule(S, S.tenure);
+  const sim = simulate(S.corpus, sched, m.mu, m.sigma, S.tenure);
+  const proj = sim.rows;
   const median = proj[proj.length - 1].p50;
-  const gp = goalProbability(S.corpus, S.monthly, m.mu, m.sigma, S.tenure, S.goalAmount);
+  const gp = goalProbabilityMC(sim.terminal, S.goalAmount);
   const worst = SCENARIOS.filter(s => s.key !== 'melt')
     .map(s => runScenario(s, m.weights, S.corpus, m.mu))
     .sort((a, b) => a.impact - b.impact)[0];
@@ -24,7 +26,7 @@ export function renderOverview(main) {
     <div class="topbar">
       <div>
         <div class="eyebrow">Overview</div>
-        <h1 class="page-title">${esc(name.split(' ')[0])}'s money machine</h1>
+        <h1 class="page-title">${esc(name.split(' ')[0])}'s portfolio</h1>
         <p class="page-sub">${tier.label} · ${goal.label} · ${S.tenure}-year tenure · <b style="color:var(--ink-1)">${m.label}${m.customized ? ' (customised)' : ''}</b> blueprint</p>
       </div>
       <div class="row">
@@ -35,11 +37,11 @@ export function renderOverview(main) {
 
     <div class="grid g4">
       <div class="card stat"><div class="label">Deployed corpus</div><div class="value tnum">${fmtINR(S.corpus)}</div>
-        <div class="delta pos">+ ${fmtINR(S.monthly)}/mo top-up</div><div class="spark" style="margin-top:8px"></div></div>
+        <div class="delta pos">+ ${fmtINR(S.monthly)}/mo, stepping up ${S.stepUp}%/yr</div><div class="spark" style="margin-top:8px"></div></div>
       <div class="card stat"><div class="label">Expected CAGR</div><div class="value tnum">${fmtPct(m.mu, 1)}</div>
         <div class="delta dim">σ ${fmtPct(m.sigma, 1)} · Sharpe ${m.sharpe}</div></div>
       <div class="card stat"><div class="label">Median wealth · year ${S.tenure}</div><div class="value tnum">${fmtINR(median)}</div>
-        <div class="delta pos">${(median / S.corpus).toFixed(1)}× your corpus</div></div>
+        <div class="delta pos">${(median / proj[proj.length - 1].invested).toFixed(1)}× invested capital</div></div>
       <div class="card stat"><div class="label">${gp != null ? 'Goal probability' : 'Stress drawdown'}</div>
         <div class="value tnum">${gp != null ? gp + '%' : m.maxDD + '%'}</div>
         <div class="delta ${gp != null ? (gp >= 70 ? 'pos' : 'neg') : 'neg'}">${gp != null ? 'of hitting ' + fmtINR(S.goalAmount) : 'worst-case estimate'}</div>
@@ -95,9 +97,9 @@ export function renderOverview(main) {
   }).join('');
   sparkline(main.querySelector('.spark'), proj.map(r => r.p50).slice(0, Math.min(13, proj.length)));
   meter(main.querySelector('.m1'), rs.score);
-  meter(main.querySelector('.m2'), rs.capacity, { color: '#3987e5', track: 'rgba(57,135,229,0.15)' });
-  meter(main.querySelector('.m3'), rs.willingness, { color: '#9085e9', track: 'rgba(144,133,233,0.15)' });
-  if (main.querySelector('.gmeter') && gp != null) meter(main.querySelector('.gmeter'), gp, { color: gp >= 70 ? '#0ca30c' : '#fab219', track: 'rgba(255,255,255,0.07)' });
+  meter(main.querySelector('.m2'), rs.capacity, { color: '#2a78d6', track: 'rgba(42,120,214,0.14)' });
+  meter(main.querySelector('.m3'), rs.willingness, { color: '#4a3aa7', track: 'rgba(74,58,167,0.14)' });
+  if (main.querySelector('.gmeter') && gp != null) meter(main.querySelector('.gmeter'), gp, { color: gp >= 70 ? '#0ca30c' : '#b97f00', track: 'rgba(26,36,32,0.07)' });
 
   // actions
   const acts = [];

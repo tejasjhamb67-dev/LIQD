@@ -4,8 +4,15 @@
 
 import { el, showTip, hideTip, tipRow, fmtINR } from './util.js';
 
-const INK2 = '#b9b8ae', INK3 = '#83827c', GRID = '#26262a', BASE = '#35353b', SURF = '#16161a';
+const INK1 = '#1a2420', INK2 = '#55605a', INK3 = '#8b948e', GRID = '#e8eae4', BASE = '#cbd0c9', SURF = '#ffffff';
 const FONT = 'font-family:inherit';
+
+// round a chart maximum up to a clean 1/1.5/2/2.5/4/5/8×10^n value so axis ticks are readable
+function niceMax(v) {
+  const mag = Math.pow(10, Math.floor(Math.log10(v)));
+  for (const m of [1, 1.5, 2, 2.5, 4, 5, 8, 10]) if (m * mag >= v) return m * mag;
+  return 10 * mag;
+}
 
 /* ================= donut ================= */
 export function donut(container, segments, { size = 190, thick = 22, centerLabel = '', centerValue = '' } = {}) {
@@ -24,7 +31,7 @@ export function donut(container, segments, { size = 190, thick = 22, centerLabel
   }).join('');
   container.innerHTML = `<svg viewBox="0 0 ${size} ${size}" style="max-width:${size}px;margin:0 auto">
     ${arcs}
-    <text x="${cx}" y="${cy - 6}" text-anchor="middle" fill="#f4f3ee" style="${FONT};font-size:21px;font-weight:720">${centerValue}</text>
+    <text x="${cx}" y="${cy - 6}" text-anchor="middle" fill="#1a2420" style="${FONT};font-size:21px;font-weight:720">${centerValue}</text>
     <text x="${cx}" y="${cy + 15}" text-anchor="middle" fill="${INK3}" style="${FONT};font-size:10.5px;letter-spacing:.08em">${centerLabel}</text>
   </svg>`;
   container.querySelectorAll('circle').forEach(c => {
@@ -44,7 +51,7 @@ export function donut(container, segments, { size = 190, thick = 22, centerLabel
 export function fanChart(container, rows, { h = 300, goal = null, fmtY = fmtINR } = {}) {
   const w = 720, padL = 66, padR = 18, padT = 16, padB = 30;
   const iw = w - padL - padR, ih = h - padT - padB;
-  const maxV = Math.max(...rows.map(r => r.p90), goal || 0) * 1.05;
+  const maxV = niceMax(Math.max(...rows.map(r => r.p90), goal || 0) * 1.02);
   const minV = 0;
   const X = t => padL + iw * (t / rows[rows.length - 1].t);
   const Y = v => padT + ih * (1 - (v - minV) / (maxV - minV));
@@ -59,21 +66,22 @@ export function fanChart(container, rows, { h = 300, goal = null, fmtY = fmtINR 
   const xTicks = rows.filter((r, i) => i % Math.ceil(rows.length / 8) === 0 || i === rows.length - 1)
     .map(r => `<text x="${X(r.t)}" y="${h - 8}" text-anchor="middle" fill="${INK3}" style="${FONT};font-size:10.5px">${r.t ? 'Y' + r.t : 'Now'}</text>`).join('');
 
-  const goalLine = goal ? `<line x1="${padL}" x2="${w - padR}" y1="${Y(goal)}" y2="${Y(goal)}" stroke="#c98500" stroke-width="1.5" stroke-dasharray="5 4"/>
+  const goalLine = goal ? `<line x1="${padL}" x2="${w - padR}" y1="${Y(goal)}" y2="${Y(goal)}" stroke="#b97f00" stroke-width="1.5" stroke-dasharray="5 4"/>
     <text x="${w - padR}" y="${Y(goal) - 6}" text-anchor="end" fill="${INK2}" style="${FONT};font-size:11px;font-weight:600">Goal ${fmtY(goal)}</text>` : '';
 
   const endV = rows[rows.length - 1];
   container.innerHTML = `<svg viewBox="0 0 ${w} ${h}">
     ${gridH}
-    <path d="${band('p10', 'p90')}" fill="#3987e5" opacity="0.10"/>
-    <path d="${band('p25', 'p75')}" fill="#3987e5" opacity="0.16"/>
-    <path d="${line('p50')}" fill="none" stroke="#3987e5" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-    <circle cx="${X(endV.t)}" cy="${Y(endV.p50)}" r="4.5" fill="#3987e5" stroke="${SURF}" stroke-width="2"/>
-    <text x="${X(endV.t) - 8}" y="${Y(endV.p50) - 10}" text-anchor="end" fill="#f4f3ee" style="${FONT};font-size:12.5px;font-weight:650">${fmtY(endV.p50)}</text>
+    <path d="${band('p10', 'p90')}" fill="#2a78d6" opacity="0.10"/>
+    <path d="${band('p25', 'p75')}" fill="#2a78d6" opacity="0.16"/>
+    <path d="${line('p50')}" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    ${rows[0].invested != null ? `<path d="${line('invested')}" fill="none" stroke="${INK3}" stroke-width="1.5" stroke-dasharray="2 4" stroke-linecap="round"/>` : ''}
+    <circle cx="${X(endV.t)}" cy="${Y(endV.p50)}" r="4.5" fill="#2a78d6" stroke="${SURF}" stroke-width="2"/>
+    <text x="${X(endV.t) - 8}" y="${Y(endV.p50) - 10}" text-anchor="end" fill="#1a2420" style="${FONT};font-size:12.5px;font-weight:650">${fmtY(endV.p50)}</text>
     ${goalLine}
     <line x1="${padL}" x2="${w - padR}" y1="${padT + ih}" y2="${padT + ih}" stroke="${BASE}" stroke-width="1"/>
     ${xTicks}
-    <line class="xh" x1="0" x2="0" y1="${padT}" y2="${padT + ih}" stroke="#f4f3ee" stroke-width="1" opacity="0"/>
+    <line class="xh" x1="0" x2="0" y1="${padT}" y2="${padT + ih}" stroke="#1a2420" stroke-width="1" opacity="0"/>
     <rect x="${padL}" y="${padT}" width="${iw}" height="${ih}" fill="transparent" class="hit"/>
   </svg>`;
 
@@ -85,7 +93,7 @@ export function fanChart(container, rows, { h = 300, goal = null, fmtY = fmtINR 
     const r = rows[Math.max(0, Math.min(rows.length - 1, t))];
     xh.setAttribute('x1', X(r.t)); xh.setAttribute('x2', X(r.t)); xh.setAttribute('opacity', 0.25);
     showTip(e, `<div class="tt">Year ${r.t}</div>
-      ${tipRow('Optimistic (P90)', fmtY(r.p90))}${tipRow('Median (P50)', fmtY(r.p50))}${tipRow('Stress (P10)', fmtY(r.p10))}`);
+      ${tipRow('Optimistic (P90)', fmtY(r.p90))}${tipRow('Median (P50)', fmtY(r.p50))}${tipRow('Stress (P10)', fmtY(r.p10))}${r.invested != null ? tipRow('Capital invested', fmtY(r.invested)) : ''}`);
   });
   hit.addEventListener('mouseleave', () => { xh.setAttribute('opacity', 0); hideTip(); });
 }
@@ -116,7 +124,7 @@ export function barsH(container, items, { fmt = v => v.toFixed(1) + '%', max = n
     return `<g class="bar" data-i="${i}" style="cursor:pointer">
       <text x="${padL - 14}" y="${y + bh / 2 + 4}" text-anchor="end" fill="${INK2}" style="${FONT};font-size:12.5px;font-weight:550">${it.label}</text>
       <path d="${path}" fill="${it.color}"/>
-      <text x="${valX}" y="${y + bh / 2 + 4}" text-anchor="${anchor}" fill="#f4f3ee" style="${FONT};font-size:12.5px;font-weight:650" class="tnum">${fmt(it.value)}</text>
+      <text x="${valX}" y="${y + bh / 2 + 4}" text-anchor="${anchor}" fill="#1a2420" style="${FONT};font-size:12.5px;font-weight:650" class="tnum">${fmt(it.value)}</text>
     </g>`;
   }).join('');
 
@@ -136,7 +144,7 @@ export function barsH(container, items, { fmt = v => v.toFixed(1) + '%', max = n
 export function lines(container, series, labels, { h = 300, fmtY = fmtINR } = {}) {
   const w = 720, padL = 66, padR = 130, padT = 14, padB = 30;
   const iw = w - padL - padR, ih = h - padT - padB;
-  const maxV = Math.max(...series.flatMap(s => s.values)) * 1.04;
+  const maxV = niceMax(Math.max(...series.flatMap(s => s.values)) * 1.02);
   const X = i => padL + iw * (i / (labels.length - 1));
   const Y = v => padT + ih * (1 - v / maxV);
   const ticks = 4;
@@ -160,7 +168,7 @@ export function lines(container, series, labels, { h = 300, fmtY = fmtINR } = {}
     ? `<text x="${X(i)}" y="${h - 8}" text-anchor="middle" fill="${INK3}" style="${FONT};font-size:10.5px">${l}</text>` : '').join('');
   container.innerHTML = `<svg viewBox="0 0 ${w} ${h}">${grid}${paths}
     <line x1="${padL}" x2="${w - padR}" y1="${padT + ih}" y2="${padT + ih}" stroke="${BASE}"/>
-    <line class="xh" y1="${padT}" y2="${padT + ih}" stroke="#f4f3ee" opacity="0"/>
+    <line class="xh" y1="${padT}" y2="${padT + ih}" stroke="#1a2420" opacity="0"/>
     <rect class="hit" x="${padL}" y="${padT}" width="${iw}" height="${ih}" fill="transparent"/></svg>`;
   const svg = container.querySelector('svg'), xh = svg.querySelector('.xh');
   svg.querySelector('.hit').addEventListener('mousemove', e => {
@@ -173,8 +181,49 @@ export function lines(container, series, labels, { h = 300, fmtY = fmtINR } = {}
   svg.querySelector('.hit').addEventListener('mouseleave', () => { xh.setAttribute('opacity', 0); hideTip(); });
 }
 
+/* ================= scatter (risk / return plane) ================= */
+// pts: background cloud [{sigma, mu, eq, fi, alt, tac}]; marks: highlighted [{sigma, mu, label, color, dx?, dy?}]
+export function scatter(container, pts, marks, { h = 300 } = {}) {
+  const w = 720, padL = 56, padR = 20, padT = 14, padB = 40;
+  const iw = w - padL - padR, ih = h - padT - padB;
+  const all = pts.concat(marks);
+  const xMin = Math.min(...all.map(p => p.sigma)) - 0.5, xMax = Math.max(...all.map(p => p.sigma)) + 0.5;
+  const yMin = Math.min(...all.map(p => p.mu)) - 0.4, yMax = Math.max(...all.map(p => p.mu)) + 0.6;
+  const X = v => padL + iw * (v - xMin) / (xMax - xMin);
+  const Y = v => padT + ih * (1 - (v - yMin) / (yMax - yMin));
+
+  const gx = [], gy = [];
+  for (let v = Math.ceil(xMin); v <= xMax; v += 2) gx.push(v);
+  for (let v = Math.ceil(yMin); v <= yMax; v += 2) gy.push(v);
+  const grid = gy.map(v => `<line x1="${padL}" x2="${w - padR}" y1="${Y(v)}" y2="${Y(v)}" stroke="${GRID}"/>
+      <text x="${padL - 8}" y="${Y(v) + 4}" text-anchor="end" fill="${INK3}" style="${FONT};font-size:10.5px" class="tnum">${v}%</text>`).join('')
+    + gx.map(v => `<text x="${X(v)}" y="${h - 22}" text-anchor="middle" fill="${INK3}" style="${FONT};font-size:10.5px" class="tnum">${v}%</text>`).join('');
+
+  const cloud = pts.map(p => `<circle cx="${X(p.sigma).toFixed(1)}" cy="${Y(p.mu).toFixed(1)}" r="2.4" fill="${BASE}" opacity="0.55"
+    data-mu="${p.mu}" data-s="${p.sigma}" data-w="${p.eq} / ${p.fi} / ${p.alt} / ${p.tac}"/>`).join('');
+  const marked = marks.map(m => `
+    <circle cx="${X(m.sigma)}" cy="${Y(m.mu)}" r="6.5" fill="${m.color}" stroke="${SURF}" stroke-width="2" style="cursor:pointer"
+      data-label="${m.label}" data-mu="${m.mu}" data-s="${m.sigma}"/>
+    <text x="${X(m.sigma) + (m.dx ?? 11)}" y="${Y(m.mu) + (m.dy ?? 4)}" fill="${INK1}" text-anchor="${(m.dx ?? 11) < 0 ? 'end' : 'start'}" style="${FONT};font-size:11.5px;font-weight:640">${m.label}</text>`).join('');
+
+  container.innerHTML = `<svg viewBox="0 0 ${w} ${h}">
+    ${grid}
+    <line x1="${padL}" x2="${w - padR}" y1="${padT + ih}" y2="${padT + ih}" stroke="${BASE}"/>
+    ${cloud}${marked}
+    <text x="${(padL + w - padR) / 2}" y="${h - 5}" text-anchor="middle" fill="${INK3}" style="${FONT};font-size:10.5px;letter-spacing:.06em">VOLATILITY (ANNUAL σ)</text>
+    <text x="12" y="${padT + ih / 2}" fill="${INK3}" transform="rotate(-90 12 ${padT + ih / 2})" text-anchor="middle" style="${FONT};font-size:10.5px;letter-spacing:.06em">EXPECTED RETURN</text>
+  </svg>`;
+  container.querySelectorAll('circle').forEach(c => {
+    c.addEventListener('mousemove', e => {
+      const lbl = c.dataset.label ? `<div class="tt">${c.dataset.label}</div>` : `<div class="tt">Feasible mix — Eq/FI/Alt/Tac ${c.dataset.w || ''}</div>`;
+      showTip(e, lbl + tipRow('Expected return', (+c.dataset.mu).toFixed(1) + '%') + tipRow('Volatility', (+c.dataset.s).toFixed(1) + '%'));
+    });
+    c.addEventListener('mouseleave', hideTip);
+  });
+}
+
 /* ================= sparkline ================= */
-export function sparkline(container, values, { w = 120, h = 34, color = '#4dd6c1' } = {}) {
+export function sparkline(container, values, { w = 120, h = 34, color = '#0d6a5c' } = {}) {
   const min = Math.min(...values), max = Math.max(...values);
   const X = i => 2 + (w - 4) * i / (values.length - 1);
   const Y = v => 3 + (h - 6) * (1 - (v - min) / ((max - min) || 1));
@@ -192,7 +241,7 @@ export function allocStrip(container, segs) {
 }
 
 /* ================= meter ================= */
-export function meter(container, pct, { color = '#4dd6c1', track = 'rgba(77,214,193,0.15)' } = {}) {
+export function meter(container, pct, { color = '#0d6a5c', track = 'rgba(13,106,92,0.12)' } = {}) {
   container.innerHTML = `<div style="height:8px;border-radius:6px;background:${track};overflow:hidden">
     <div style="height:100%;width:${Math.min(100, Math.max(0, pct))}%;background:${color};border-radius:6px;transition:width .4s"></div></div>`;
 }

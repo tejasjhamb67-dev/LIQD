@@ -64,11 +64,11 @@ export function renderScenario(main) {
       <div class="divider"></div>
       <h3 class="card-title">Shock by asset class</h3>
       <div class="chart-box" id="shockBars"></div>
-      <p class="small dim" style="margin-top:12px"><b style="color:var(--ink-1)">LIQD playbook:</b> ${playbook(sel, r)}</p>`;
+      <p class="small dim" style="margin-top:12px"><b style="color:var(--ink-1)">Advisory note:</b> ${playbook(sel, r)}</p>`;
     barsH(d.querySelector('#shockBars'), CLASS_ORDER.map(k => ({
       label: `${CLASS_META[k].label} (${m.weights[k]}%)`,
       value: sel.shocks[k],
-      color: sel.shocks[k] < 0 ? '#e66767' : '#199e70',
+      color: sel.shocks[k] < 0 ? '#e34948' : '#1baf7a',
       note: `Weighted impact ${fmtPct(m.weights[k] * sel.shocks[k] / 100, 1, true)}`,
     })), { max: 55 });
   }
@@ -83,7 +83,7 @@ export function renderScenario(main) {
   // all-scenarios chart
   barsH(main.querySelector('#scnBars'), SCENARIOS.map(scn => {
     const r = runScenario(scn, m.weights, S.corpus, m.mu);
-    return { label: scn.name, value: r.hitPct, color: r.hitPct < 0 ? '#e66767' : '#199e70', note: fmtINR(r.impact, { sign: true }) };
+    return { label: scn.name, value: r.hitPct, color: r.hitPct < 0 ? '#e34948' : '#1baf7a', note: fmtINR(r.impact, { sign: true }) };
   }), { max: 40 });
 
   paintDetail();

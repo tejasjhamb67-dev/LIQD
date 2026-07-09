@@ -10,6 +10,13 @@ export const DEFAULTS = {
   investorType: 'henry',
   corpus: 5e6,
   monthly: 100000,
+  stepUp: 8,                // annual SIP step-up %
+  incomeEvents: [           // major salary/income hikes → SIP jumps
+    { year: 3, pct: 30 },
+    { year: 7, pct: 25 },
+    { year: 12, pct: 25 },
+    { year: 18, pct: 20 },
+  ],
   tenure: 15,
   goalType: 'wealth',
   goalAmount: 0,

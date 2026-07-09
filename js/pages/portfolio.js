@@ -89,11 +89,11 @@ export function renderPortfolio(main) {
     <td class="small">${LIQ_MAP[s.key] || 'T+2'}</td></tr>`).join('');
 
   // liquidity ladder
-  const colors = { 'T+0 – T+2': '#199e70', 'Within a month': '#c98500', 'Lock-in / illiquid': '#9085e9' };
+  const colors = { 'T+0 – T+2': '#1baf7a', 'Within a month': '#b97f00', 'Lock-in / illiquid': '#4a3aa7' };
   main.querySelector('#liqRows').innerHTML = Object.entries(buckets).map(([k, v]) => `
     <div style="padding:10px 0;border-bottom:1px solid var(--line-soft)">
       <div class="row between small"><span class="dim">${k}</span><b class="tnum">${v.toFixed(0)}% · ${fmtINR(S.corpus * v / 100)}</b></div>
-      <div style="height:8px;border-radius:6px;background:rgba(255,255,255,0.06);margin-top:7px;overflow:hidden">
+      <div style="height:8px;border-radius:6px;background:rgba(26,36,32,0.06);margin-top:7px;overflow:hidden">
         <div style="height:100%;width:${v}%;background:${colors[k]};border-radius:6px"></div></div></div>`).join('');
 
   // LRS box
@@ -120,10 +120,10 @@ export function renderPortfolio(main) {
 
 // lighten a hex color stepwise for intra-class strips
 function shade(hex, i, n) {
-  const f = 1 - i / Math.max(n, 2) * 0.55;
+  const f = 1 - i / Math.max(n, 2) * 0.5;   // step toward the light page for later sleeves
   const c = parseInt(hex.slice(1), 16);
-  const r = Math.round(((c >> 16) & 255) * f + 22 * (1 - f));
-  const g = Math.round(((c >> 8) & 255) * f + 22 * (1 - f));
-  const b = Math.round((c & 255) * f + 26 * (1 - f));
+  const r = Math.round(((c >> 16) & 255) * f + 244 * (1 - f));
+  const g = Math.round(((c >> 8) & 255) * f + 245 * (1 - f));
+  const b = Math.round((c & 255) * f + 242 * (1 - f));
   return `rgb(${r},${g},${b})`;
 }
