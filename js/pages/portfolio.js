@@ -36,7 +36,7 @@ export function renderPortfolio(main) {
     <div class="page-head">
       <div class="eyebrow">Portfolio</div>
       <h1 class="page-title">${m.label} blueprint${m.customized ? ' · customised' : ''}</h1>
-      <p class="page-sub">${fmtINR(S.corpus)} across four asset classes and ${sleeves.length} sleeves. Expected ${fmtPct(m.mu, 1)} CAGR at ${fmtPct(m.sigma, 1)} volatility.</p>
+      <p class="page-sub">${fmtINR(S.corpus)} · ${sleeves.length} sleeves · ${fmtPct(m.mu, 1)} expected at ${fmtPct(m.sigma, 1)} vol.</p>
     </div>
 
     <div class="grid g4" id="classCards"></div>
@@ -51,7 +51,7 @@ export function renderPortfolio(main) {
     <div class="grid g2" style="margin-top:18px">
       <div class="card">
         <h3 class="card-title">Liquidity ladder — the LIQD lens</h3>
-        <p class="small dim" style="margin-bottom:14px">How fast this portfolio turns back into money. We engineer every blueprint so an emergency never forces a fire-sale.</p>
+        <p class="small muted" style="margin-bottom:14px">How fast this turns back into money.</p>
         <div id="liqRows"></div>
       </div>
       <div class="card">

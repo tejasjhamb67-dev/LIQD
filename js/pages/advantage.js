@@ -34,7 +34,7 @@ export function renderAdvantage(main) {
     <div class="page-head">
       <div class="eyebrow">LIQD Advantage</div>
       <h1 class="page-title">The fee you don't pay is the alpha you keep</h1>
-      <p class="page-sub">Same gross return (${fmtPct(gross, 1)}), same ${yrs} years, same ${fmtINR(S.corpus)} corpus and the same stepped-up SIP path. The only variable is who takes a cut, and how.</p>
+      <p class="page-sub">Same gross return, same capital. The only variable is who takes a cut.</p>
     </div>
 
     <div class="card">

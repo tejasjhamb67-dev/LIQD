@@ -28,7 +28,7 @@ export function renderRebalance(main) {
     <div class="page-head">
       <div class="eyebrow">Rebalancing Studio</div>
       <h1 class="page-title">Test the change before you make it</h1>
-      <p class="page-sub">Institutional practice: define a policy, allow drift inside bands, rebalance with a trade list and a tax estimate — never on impulse. Move the levers; the engine reprices risk, return and goal odds live.</p>
+      <p class="page-sub">Policy bands · live what-if · trade list with tax math.</p>
     </div>
 
     <div class="card" style="margin-bottom:16px">

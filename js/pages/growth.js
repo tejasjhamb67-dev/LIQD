@@ -14,7 +14,7 @@ export function renderGrowth(main) {
     <div class="page-head">
       <div class="eyebrow">Growth & Projections</div>
       <h1 class="page-title">The honest range of outcomes</h1>
-      <p class="page-sub">2,000 simulated market paths through your ${m.label} policy (${fmtPct(m.mu, 1)} expected, ${fmtPct(m.sigma, 1)} volatility), including your step-up SIP and income events — a distribution, not a straight-line promise.</p>
+      <p class="page-sub">2,000 Monte Carlo paths · ${m.label} policy · step-up SIP and income events included.</p>
     </div>
 
     <div class="card">

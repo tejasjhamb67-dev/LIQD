@@ -9,7 +9,7 @@ export function renderIntegrations(main) {
     <div class="page-head">
       <div class="eyebrow">Integrations</div>
       <h1 class="page-title">Bring your whole financial life in</h1>
-      <p class="page-sub">One-click connections to every broker, registrar and aggregator you already use. LIQD imports, de-duplicates and analyses your existing holdings against your blueprint — induction in minutes, not paperwork weeks.</p>
+      <p class="page-sub">Link everything. LIQD nets, de-duplicates and monitors it against your policy.</p>
     </div>
     <div class="int-grid" id="grid"></div>
     <div id="imported" style="margin-top:22px"></div>

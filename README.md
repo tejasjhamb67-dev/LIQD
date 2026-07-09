@@ -1,6 +1,6 @@
-# LIQD — Portfolio Intelligence
+# LIQD — One membership. Ten products.
 
-**Aladdin-grade portfolio construction, projection, stress-testing and rebalancing — as a chic flat-fee SaaS for HENRYs, HNIs, UHNIs and family offices.** See [PLAN.md](PLAN.md) for the full product thesis and Dezerv/BlackRock positioning.
+**A full-stack financial services suite for HENRYs → family offices: Wealth (PMS core) · Terminal · Screen · Strategies · Learn · Credit · Circles · Pulse · Universe & Assets · Advisory.** Full product tree, competitive teardown and delivery phases: [PLAN.md](PLAN.md).
 
 ## Run it
 
@@ -36,7 +36,14 @@ Or zero-CLI: [vercel.com/new](https://vercel.com/new) → import the GitHub repo
 | **Growth & Projections** | 2,000-path **Monte Carlo** fan (P10–P90) with invested-capital line, live SIP/step-up/tenure sliders, **glide-path de-risking toggle**, goal probability, contribution schedule, crore milestones, and a **drawdown simulator** (post-tenure inflation-indexed withdrawals → plan survival rate) |
 | **Rebalancing Studio** | Policy bands (±5 pts) with **whole-portfolio drift incl. linked external holdings**, live what-if sliders, **efficient frontier** with your draft plotted, **risk-contribution decomposition**, sleeve-level **trade list with LTCG estimate** and harvesting budget, before/after diff, commit |
 | **Policy Statement (IPS)** | Print-ready Investment Policy Statement generated live from state: mandate, risk profile, policy allocation with bands & risk shares, glide path, rebalancing protocol, fees, signature block |
-| **Scenario Lab** | 8 stress scenarios (2008, COVID, rate shock, stagflation, INR slide, melt-up…) as shock vectors on your live weights, with recovery estimates and a 100%-equity comparison |
+| **Risk Matrix** | Dense scenario × asset-class shock grid with diverging heat cells, portfolio impact, recovery, diversification cushion, breach protocol |
+| **Terminal** | Security master: watchlist grid + full instrument pages (price history, valuation, quality, ownership, factor scores, one-screen brief, tax by route, role in *your* portfolio) |
+| **Screen** | Factor screener (Q/V/M composites) with preset screens: coffee-can quality, momentum, value+yield, growth, LRS |
+| **Strategies** | 6 rules-based playbooks (momentum rotation, covered calls, arbitrage carry, index+gold barbell, special situations, ESOP unwind) — rules, when-it-works, when-it-bleeds, sized against your tactical sleeve |
+| **Learn** | Duolingo-mechanics mentoring: 4 tracks × 4 lessons, quiz gates, XP and levels |
+| **Credit** | HENRY wedge: spend profile → optimal 2-card stack net of fees, utilisation/score hygiene, borrowing options ranked by true APR |
+| **Circles** | Pooled capital: fractional CRE, bond lots, group LAS rates, art — tickets, quorum, escrow status |
+| **Pulse** | Structured trade setups (entry/target/stop/thesis/invalidation required; R:R computed) — social with a literacy grammar |
 | **Product Universe** | 40+ instruments across all classes incl. US/global via LRS & GIFT City, AIF/PMS/unlisted — filterable, tier-gated |
 | **Integrations** | Zerodha, Groww, Upstox, Angel One, MF Central, CAMS/KFin CAS, Account Aggregator, Vested/IBKR… mock connect + import analysis (fee leaks, overlap, drift) |
 | **LIQD Advantage** | Fee-drag chart: LIQD flat fee vs DIY direct vs 2%+20% PMS vs regular MF over your tenure, plus the six differentiation pillars and pricing |

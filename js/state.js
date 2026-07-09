@@ -27,6 +27,11 @@ export const DEFAULTS = {
   chosenModel: null,        // 'conservative' | 'balanced' | 'aggressive'
   customWeights: null,      // set from Rebalancing Studio
   connections: [],          // integration keys
+  watchlist: ['RELIANCE', 'HDFCBANK', 'NVDA'],
+  spend: null,              // credit: monthly spend profile
+  learn: null,              // learn: { done, xp }
+  pulse: [],                // pulse: user posts
+  circles: [],              // circles joined
 };
 
 export let S = load();

@@ -37,7 +37,7 @@ export function renderIPS(main) {
         <div>
           <div class="eyebrow">Policy Statement</div>
           <h1 class="page-title">Your mandate, on one page</h1>
-          <p class="page-sub">The Investment Policy Statement is the contract between you and your own plan — the document you re-read in a drawdown instead of panic-selling. Generated live from your blueprint; print it, sign it, keep it.</p>
+          <p class="page-sub">The contract between you and your plan. Generated live; print, sign, keep.</p>
         </div>
         <button class="btn primary" id="printBtn">Print / save as PDF</button>
       </div>
