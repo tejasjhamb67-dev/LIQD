@@ -33,7 +33,17 @@ const TRACKS = [
 
 function prog() {
   S.learn = S.learn || { done: {}, xp: 0 };
+  if (S.learn.streak == null) { S.learn.streak = 0; S.learn.lastDay = null; }
   return S.learn;
+}
+
+// one lesson a day keeps the streak alive; a missed day resets it
+function bumpStreak(L) {
+  const today = new Date().toISOString().slice(0, 10);
+  if (L.lastDay === today) return;
+  const yday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  L.streak = L.lastDay === yday ? (L.streak || 0) + 1 : 1;
+  L.lastDay = today;
 }
 
 export function renderLearn(main) {
@@ -49,7 +59,7 @@ export function renderLearn(main) {
       <p class="page-sub">3-minute lessons, quiz gates, no fluff. Finish a track, unlock the tools it teaches.</p>
     </div>
     <div class="grid g3" style="margin-bottom:16px">
-      <div class="card stat"><div class="label">Level</div><div class="value tnum">${level}</div><div class="delta dim">${L.xp} XP · ${100 - L.xp % 100} to next</div><div class="xpm" style="margin-top:8px"></div></div>
+      <div class="card stat"><div class="label">Level</div><div class="value tnum">${level}</div><div class="delta dim">${L.xp} XP · ${L.streak || 0}-day streak</div><div class="xpm" style="margin-top:8px"></div></div>
       <div class="card stat"><div class="label">Lessons complete</div><div class="value tnum">${doneCount} / ${totalLessons}</div><div class="delta dim">${TRACKS.filter(t => t.lessons.every((_, i) => L.done[t.key + i])).length} tracks mastered</div></div>
       <div class="card stat"><div class="label">Why it matters</div><div class="value" style="font-size:15px;font-weight:550;line-height:1.4">Investors who understand drawdowns hold through them. Behaviour is the last alpha.</div></div>
     </div>
@@ -102,7 +112,7 @@ function quiz(main, tkey, i) {
     if (j === ls.a) {
       btn.classList.add('right');
       const L = prog();
-      if (!L.done[tkey + i]) { L.done[tkey + i] = 1; L.xp += 25; save(); }
+      if (!L.done[tkey + i]) { L.done[tkey + i] = 1; L.xp += 25; bumpStreak(L); save(); }
       host.querySelector('#qResult').innerHTML = `<span class="badge brand">+25 XP</span> <button class="btn sm primary" id="qNext" style="margin-left:10px">Continue</button>`;
       host.querySelector('#qNext').onclick = () => { host.innerHTML = ''; renderLearn(main); };
     } else {

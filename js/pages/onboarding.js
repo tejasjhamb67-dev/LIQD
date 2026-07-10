@@ -5,6 +5,7 @@ import { riskScore, recommendedModel, explainConstruction, contributionSchedule,
 import { INVESTOR_TYPES, GOALS, APPETITE, TOLERANCE, CONSTRAINTS, SLEEVES } from '../data.js';
 import { el, esc, fmtINR, fmtPct, CLASS_META, CLASS_ORDER } from '../util.js';
 import { allocStrip } from '../charts.js';
+import { buffer } from '../buffer.js';
 import { go } from '../app.js';
 
 const STEPS = ['who', 'money', 'goal', 'appetite', 'tolerance', 'constraints', 'construction', 'models'];
@@ -36,14 +37,28 @@ function commit() {
 const progress = () =>
   `<div class="ob-progress">${STEPS.map((s, i) => `<i class="${i <= step ? 'done' : ''}"></i>`).join('')}</div>`;
 
+// interlude per forward transition — every label names a computation that runs
+const INTERLUDES = {
+  who:         ['tape', 'Reading your mandate', ['PROFILING TIER', 'SETTING ELIGIBILITY GATES'], 850],
+  money:       ['stack', 'Modelling your contribution path', ['COMPOUNDING STEP-UPS', 'PLACING INCOME EVENTS'], 1000],
+  goal:        ['tape', 'Anchoring the objective', ['MAPPING THE LIABILITY', 'SETTING THE HORIZON'], 850],
+  appetite:    ['tape', 'Calibrating willingness', ['SCORING APPETITE'], 750],
+  tolerance:   ['tape', 'Calibrating capacity', ['STRESSING YOUR FLINCH POINT'], 750],
+  constraints: ['ring', 'Running the construction', ['SCREENING 40+ INSTRUMENTS', 'APPLYING YOUR CONSTRAINTS', 'SCORING CAPACITY × WILLINGNESS'], 1700],
+  construction:['ring', 'Optimising three postures', ['SIMULATING 2,000 MARKET PATHS', 'PRICING DRAWDOWNS', 'RANKING PROPOSALS'], 1800],
+};
+
 function nav(wrap, main, { nextLabel = 'Continue' } = {}) {
   const n = el('div', 'ob-nav');
   const back = el('button', 'btn ghost', '← Back');
   back.style.visibility = step === 0 ? 'hidden' : 'visible';
-  back.onclick = () => { step--; drawStep(main); };
+  back.onclick = () => { step--; drawStep(main); };   // backwards is instant, always
   const next = el('button', 'btn primary', nextLabel + ' →');
-  next.onclick = () => {
-    if (STEPS[step] === 'constraints') commit(); // lock inputs before showing the construction
+  next.onclick = async () => {
+    next.disabled = true;
+    if (STEPS[step] === 'constraints') commit(); // lock inputs before the construction
+    const [kind, title, subs, ms] = INTERLUDES[STEPS[step]] || [];
+    if (kind) await buffer(kind, { title, subs, ms });
     step++; drawStep(main);
   };
   n.append(back, next);
@@ -337,14 +352,13 @@ function stepModels(wrap, main) {
       <button class="btn ${key === reco ? 'primary' : ''}" data-act="deploy" style="width:100%">Deploy ${m.label}</button>
       <button class="btn ghost sm" data-act="tune" style="width:100%">Deploy & adjust allocation →</button>`);
     allocStrip(card.querySelector('.strip'), CLASS_ORDER.map(k => ({ label: CLASS_META[k].label, value: m.weights[k], color: CLASS_META[k].hex })));
-    card.querySelector('[data-act=deploy]').onclick = () => {
+    const deploy = async (dest) => {
       S.chosenModel = key; S.customWeights = null; S.onboarded = true; save();
-      go('overview');
+      await buffer('stack', { title: `Deploying ${m.label}`, subs: ['ALLOCATING SLEEVES', 'SETTING ±5PT POLICY BANDS', 'PREPARING YOUR WORKSPACE'], ms: 1500 });
+      go(dest);
     };
-    card.querySelector('[data-act=tune]').onclick = () => {
-      S.chosenModel = key; S.customWeights = null; S.onboarded = true; save();
-      go('rebalance');
-    };
+    card.querySelector('[data-act=deploy]').onclick = () => deploy('overview');
+    card.querySelector('[data-act=tune]').onclick = () => deploy('rebalance');
     cards.appendChild(card);
   }
 }

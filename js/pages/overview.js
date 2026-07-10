@@ -5,6 +5,8 @@ import { riskScore, simulate, goalProbabilityMC, contributionSchedule, runScenar
 import { SCENARIOS, INVESTOR_TYPES, GOALS } from '../data.js';
 import { el, esc, fmtINR, fmtPct, CLASS_META, CLASS_ORDER } from '../util.js';
 import { donut, sparkline, meter } from '../charts.js';
+import { fetchQuotes } from '../live.js';
+import { STOCKS } from '../stocks.js';
 import { go } from '../app.js';
 
 export function renderOverview(main) {
@@ -34,6 +36,8 @@ export function renderOverview(main) {
         <div class="avatar">${esc((name[0] || 'L').toUpperCase())}</div>
       </div>
     </div>
+
+    <div class="live-strip" id="wlStrip" style="margin-bottom:14px;display:none"></div>
 
     <div class="grid g4">
       <div class="card stat"><div class="label">Deployed corpus</div><div class="value tnum">${fmtINR(S.corpus)}</div>
@@ -109,6 +113,20 @@ export function renderOverview(main) {
   acts.push(['See what fees would cost you elsewhere', `A 2% PMS fee costs you ${fmtINR(S.corpus * 0.35)}+ over ${S.tenure} yrs`, 'advantage']);
   main.querySelector('#actions').innerHTML = acts.slice(0, 4).map(([t, d, h]) =>
     `<button class="opt-card" data-go="${h}" style="padding:13px 15px"><span><span class="t" style="font-size:13.5px">${t}</span><div class="d">${d}</div></span></button>`).join('');
+
+  // live watchlist strip (hidden unless quotes are reachable)
+  const wl = STOCKS.filter(x => (S.watchlist || []).includes(x.sym));
+  if (wl.length) fetchQuotes(wl).then(q => {
+    if (!q || !main.isConnected) return;
+    const strip = main.querySelector('#wlStrip');
+    strip.style.display = 'flex';
+    strip.innerHTML = wl.filter(x => q[x.sym]).map(x => `
+      <span class="live-tile" data-go="stock/${x.sym}"><b>${x.sym}</b>
+        <span class="tnum">${(x.mkt === 'US' ? '$' : '₹') + q[x.sym].price.toLocaleString('en-IN')}</span>
+        <span class="tnum small" style="color:${q[x.sym].changePct >= 0 ? 'var(--up)' : 'var(--down)'}">${q[x.sym].changePct >= 0 ? '+' : ''}${q[x.sym].changePct}%</span></span>`).join('')
+      + '<span class="badge brand" style="align-self:center">LIVE</span>';
+    strip.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
+  });
 
   // wires
   main.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));

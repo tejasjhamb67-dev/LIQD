@@ -9,6 +9,7 @@ import { renderGrowth } from './pages/growth.js';
 import { renderRebalance } from './pages/rebalance.js';
 import { renderRisk } from './pages/risk.js';
 import { renderIPS } from './pages/ips.js';
+import { initCmdk } from './cmdk.js';
 import { renderTerminal, renderStock } from './pages/terminal.js';
 import { renderScreen } from './pages/screen.js';
 import { renderStrategies } from './pages/strategies.js';
@@ -85,7 +86,7 @@ function shell(route) {
     b.onclick = () => go(r.hash);
     sb.appendChild(b);
   }
-  const foot = el('div', 'foot', `${S.client.name ? S.client.name + ' · ' : ''}${S.investorType.toUpperCase()}<br><button class="muted" id="resetBtn" style="text-decoration:underline;font-size:11px;margin-top:4px">Reset demo</button>`);
+  const foot = el('div', 'foot', `${S.client.name ? S.client.name + ' · ' : ''}${S.investorType.toUpperCase()} · <kbd class="kk">⌘K</kbd> anywhere<br><button class="muted" id="resetBtn" style="text-decoration:underline;font-size:11px;margin-top:4px">Reset demo</button>`);
   sb.appendChild(foot);
   app.appendChild(sb);
   const main = el('main', 'main fade-in');
@@ -106,6 +107,7 @@ export function render() {
 
 window.addEventListener('hashchange', render);
 render();
+initCmdk(go);
 
 // adopt newer cloud state if one exists (silent no-op without the API)
 import('./state.js').then(({ initSync }) => initSync().then(changed => { if (changed) render(); }));
