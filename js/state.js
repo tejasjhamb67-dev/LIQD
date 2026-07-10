@@ -1,6 +1,7 @@
 // LIQD — client state, persisted to localStorage
 
 import { buildModels, statsForWeights } from './engine.js';
+import { schedulePush, pullState } from './live.js';
 
 const KEY = 'liqd.v1';
 
@@ -40,8 +41,23 @@ function load() {
   try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; }
   catch { return { ...DEFAULTS }; }
 }
-export function save() { localStorage.setItem(KEY, JSON.stringify(S)); }
+export function save() {
+  S._savedAt = Date.now();
+  localStorage.setItem(KEY, JSON.stringify(S));
+  schedulePush(S);            // best-effort cloud sync; no-op without the API
+}
 export function reset() { S = { ...DEFAULTS, client: { name: '', age: 32 }, constraints: [], connections: [] }; save(); }
+
+/** Pull cloud state once at boot; adopt it only if strictly newer. */
+export async function initSync() {
+  const doc = await pullState();
+  if (doc && doc.state && (doc.updatedAt || 0) > (S._savedAt || 0)) {
+    S = { ...DEFAULTS, ...doc.state };
+    localStorage.setItem(KEY, JSON.stringify(S));
+    return true;
+  }
+  return false;
+}
 
 let modelCache = null, cacheSig = '';
 export function models() {

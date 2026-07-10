@@ -4,6 +4,7 @@
 import { S, save } from '../state.js';
 import { STOCKS } from '../stocks.js';
 import { esc } from '../util.js';
+import { pulseFeed, pulsePost, ago } from '../live.js';
 
 const SEED_POSTS = [
   { user: 'quietcompounder', sym: 'HDFCBANK', dir: 'long', entry: 1685, target: 1950, stop: 1590,
@@ -20,9 +21,15 @@ const SEED_POSTS = [
     invalid: 'US 10y real yield sustained above 2.5%.', likes: 143, ago: '1d' },
 ];
 
-export function renderPulse(main) {
+export function renderPulse(main, _, serverPosts = null) {
   S.pulse = S.pulse || [];
-  const posts = [...S.pulse, ...SEED_POSTS];
+  const posts = serverPosts
+    ? serverPosts.map(p => ({ ...p, ago: ago(p.at) }))
+    : [...S.pulse, ...SEED_POSTS];
+  if (serverPosts === null && !renderPulse._tried) {
+    renderPulse._tried = true;
+    pulseFeed().then(posts => { if (posts && posts.length && main.isConnected) renderPulse(main, null, posts); });
+  }
 
   const rr = p => {
     const risk = Math.abs(p.entry - p.stop), reward = Math.abs(p.target - p.entry);
@@ -32,7 +39,7 @@ export function renderPulse(main) {
   main.innerHTML = `
     <div class="page-head">
       <div class="eyebrow">08 · Pulse</div>
-      <h1 class="page-title">Setups, not shouting</h1>
+      <h1 class="page-title">Setups, not shouting <span class="badge ${serverPosts ? 'brand' : ''}" id="pulseBadge">${serverPosts ? 'LIVE FEED' : 'LOCAL'}</span></h1>
       <p class="page-sub">Every post carries entry, stop, thesis and invalidation — or it doesn't publish. R:R is computed, never claimed.</p>
     </div>
 
@@ -98,13 +105,20 @@ export function renderPulse(main) {
   ['#pEntry', '#pTarget', '#pStop', '#pThesis', '#pInvalid'].forEach(id => $(id).oninput = check);
   $('#pLong').onclick = () => { dir = 'long'; $('#pLong').classList.add('on'); $('#pShort').classList.remove('on'); check(); };
   $('#pShort').onclick = () => { dir = 'short'; $('#pShort').classList.add('on'); $('#pLong').classList.remove('on'); check(); };
-  $('#pPost').onclick = () => {
-    S.pulse.unshift({
+  $('#pPost').onclick = async () => {
+    const post = {
       user: (S.client.name || 'member').toLowerCase().replace(/\s+/g, '_'), sym: $('#pSym').value, dir,
       entry: +$('#pEntry').value, target: +$('#pTarget').value, stop: +$('#pStop').value,
-      thesis: $('#pThesis').value.trim(), invalid: $('#pInvalid').value.trim(), likes: 0, ago: 'now',
-    });
-    save();
-    renderPulse(main);
+      thesis: $('#pThesis').value.trim(), invalid: $('#pInvalid').value.trim(),
+    };
+    $('#pPost').disabled = true; $('#pPost').textContent = 'Publishing…';
+    const served = await pulsePost(post);           // shared feed when the API is live
+    if (!served) { S.pulse.unshift({ ...post, likes: 0, ago: 'now' }); save(); }
+    load(main);
   };
+}
+
+// fetch the shared feed once; fall back to local + seeds
+function load(main) {
+  pulseFeed().then(posts => renderPulse(main, null, posts && posts.length ? posts : null));
 }

@@ -48,14 +48,34 @@ Or zero-CLI: [vercel.com/new](https://vercel.com/new) → import the GitHub repo
 | **Integrations** | Zerodha, Groww, Upstox, Angel One, MF Central, CAMS/KFin CAS, Account Aggregator, Vested/IBKR… mock connect + import analysis (fee leaks, overlap, drift) |
 | **LIQD Advantage** | Fee-drag chart: LIQD flat fee vs DIY direct vs 2%+20% PMS vs regular MF over your tenure, plus the six differentiation pillars and pricing |
 
+## P4 — the backend spine (live on Vercel)
+
+`api/` deploys as Vercel serverless functions alongside the static site — nothing to configure for market data:
+
+| Endpoint | What it does | Needs setup? |
+|---|---|---|
+| `GET /api/quote?symbols=RELIANCE.NS,NVDA` | Live quotes (Yahoo Finance proxy, 60s edge cache) | No — works on deploy |
+| `GET /api/history?symbol=X&range=3y&interval=1wk` | Real price history (1h edge cache) | No — works on deploy |
+| `GET/PUT /api/sync` | Cross-device state sync, keyed by device id | **Yes — KV (below)** |
+| `GET/POST /api/pulse` | Shared setups feed; server re-validates thesis/invalidation/levels | **Yes — KV (below)** |
+
+**Turn on persistence (2 minutes, free tier):** Vercel dashboard → your project → *Storage* → *Create database* → **Upstash Redis** (Marketplace) → connect to the project. That injects `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` (or `KV_REST_API_*`) and sync + the shared Pulse feed go live on the next request — no code change. Without it, those two endpoints return 503 and the front-end silently stays local-only.
+
+**Front-end behaviour:** the client (`js/live.js`) fails soft everywhere. On the Terminal a `LIVE` badge appears when quotes/history are real; Pulse shows `LIVE FEED` vs `LOCAL`; identity is a device key (`X-LIQD-Device`) until account auth lands.
+
+**Still credential-gated (next):** Google OAuth (needs OAuth client), payments for subscriptions (Razorpay keys), broker OAuth (Kite Connect app), AA rails (FIU licence). Scaffolding notes in PLAN.md §4.
+
 ## Architecture
 
 ```
 index.html
+api/                  Vercel serverless functions: quote, history, sync, pulse
+                      + _store.js (Upstash/KV abstraction, graceful 503 degrade)
 css/liqd.css          design system (light porcelain + petrol, validated data palette)
 js/
   app.js              shell + hash router
-  state.js            client state → localStorage
+  state.js            client state → localStorage + best-effort cloud sync
+  live.js             fail-soft API client: quotes, history, sync, pulse feed
   engine.js           THE engine: risk score → model construction (correlation
                       matrix) → contribution schedule (step-up + income events)
                       → seeded Monte Carlo → risk contributions → efficient

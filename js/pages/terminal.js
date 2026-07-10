@@ -2,8 +2,9 @@
 
 import { S, save, active } from '../state.js';
 import { STOCKS, bySym, priceSeries } from '../stocks.js';
-import { esc, fmtPct, showTip, hideTip, tipRow } from '../util.js';
+import { esc, fmtPct } from '../util.js';
 import { sparkline, lines } from '../charts.js';
+import { fetchQuotes, fetchHistory } from '../live.js';
 import { go } from '../app.js';
 
 const fmtPx = (s) => (s.mkt === 'US' ? '$' : '₹') + s.px.toLocaleString('en-IN');
@@ -26,8 +27,8 @@ export function renderTerminal(main) {
   main.innerHTML = `
     <div class="page-head">
       <div class="eyebrow">02 · Terminal</div>
-      <h1 class="page-title">Security master</h1>
-      <p class="page-sub">Open any instrument. Demo data — live feed lands with the data layer.</p>
+      <h1 class="page-title">Security master <span class="badge" id="liveBadge">DEMO DATA</span></h1>
+      <p class="page-sub">Open any instrument.</p>
     </div>
     <div class="row" style="gap:10px;flex-wrap:wrap;margin-bottom:14px">
       <input class="input" id="tq" placeholder="Search symbol, name, sector" style="max-width:300px">
@@ -48,7 +49,7 @@ export function renderTerminal(main) {
           <div class="small muted">${esc(s.name)} · ${fmtMcap(s.mcapCr, s.mkt)}</div></span>
         <span class="spark" style="width:110px"></span>
         <span style="text-align:right"><b class="tnum">${fmtPx(s)}</b>
-          <div class="small tnum" style="color:${s.ret1y >= 0 ? 'var(--up)' : 'var(--down)'}">${fmtPct(s.ret1y, 1, true)} 1y</div></span>
+          <div class="small tnum" style="color:${(s.chg ?? s.ret1y) >= 0 ? 'var(--up)' : 'var(--down)'}">${s.chg != null ? fmtPct(s.chg, 2, true) + ' 1d' : fmtPct(s.ret1y, 1, true) + ' 1y'}</div></span>
         <span class="star ${S.watchlist.includes(s.sym) ? 'on' : ''}" data-star="${s.sym}">★</span>
       </div>`).join('') || '<p class="small muted" style="padding:12px">No matches.</p>';
     main.querySelectorAll('.wl-row').forEach(r => {
@@ -65,6 +66,18 @@ export function renderTerminal(main) {
     paint();
   });
   paint();
+
+  // live quotes overwrite the static prices when the API is reachable
+  fetchQuotes(STOCKS).then(quotes => {
+    if (!quotes || !main.isConnected) return;
+    for (const s of STOCKS) if (quotes[s.sym]) {
+      s.px = quotes[s.sym].price;
+      s.chg = quotes[s.sym].changePct;
+    }
+    const badge = main.querySelector('#liveBadge');
+    if (badge) { badge.textContent = 'LIVE'; badge.classList.add('brand'); }
+    paint();
+  });
 }
 
 /* ================= security page ================= */
@@ -92,7 +105,7 @@ export function renderStock(main, sym) {
         </div>
         <button class="btn sm ${inWl ? '' : 'ghost'}" id="wl">${inWl ? '★ Watching' : '☆ Watch'}</button>
       </div>
-      <div class="small muted" style="margin:4px 0 12px">${esc(s.name)} · ${fmtMcap(s.mcapCr, s.mkt)} · β ${s.beta}</div>
+      <div class="small muted" style="margin:4px 0 12px">${esc(s.name)} · ${fmtMcap(s.mcapCr, s.mkt)} · β ${s.beta} · <span class="badge" id="pxBadge">DEMO SERIES</span></div>
       <div class="chart-box" id="pxChart"></div>
     </div>
 
@@ -132,10 +145,26 @@ export function renderStock(main, sym) {
       </div>
     </div>`;
 
-  lines(main.querySelector('#pxChart'),
-    [{ label: s.sym, color: '#2a78d6', values: series.filter((_, i) => i % 2 === 0) }],
-    series.filter((_, i) => i % 2 === 0).map((_, i) => 'W' + i * 2),
-    { h: 260, fmtY: v => cur + (v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v.toFixed(0)) });
+  const fmtY = v => cur + (v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v.toFixed(0));
+  const drawSeries = (vals, labels, live) => {
+    lines(main.querySelector('#pxChart'), [{ label: s.sym, color: '#2a78d6', values: vals }], labels, { h: 260, fmtY });
+    const b = main.querySelector('#pxBadge');
+    if (b && live) { b.textContent = 'LIVE · 3Y WEEKLY'; b.classList.add('brand'); }
+  };
+  drawSeries(series.filter((_, i) => i % 2 === 0), series.filter((_, i) => i % 2 === 0).map((_, i) => 'W' + i * 2), false);
+
+  // real history + live quote when the API is reachable
+  fetchHistory(s).then(pts => {
+    if (!pts || !main.isConnected) return;
+    drawSeries(pts.map(p => p.c),
+      pts.map(p => new Date(p.t * 1000).toLocaleDateString('en-IN', { month: 'short', year: '2-digit' })), true);
+  });
+  fetchQuotes([s]).then(q => {
+    if (!q || !q[s.sym] || !main.isConnected) return;
+    const live = q[s.sym];
+    const pxEl = main.querySelector('.tick-head .px');
+    if (pxEl) pxEl.textContent = cur + live.price.toLocaleString('en-IN');
+  });
 
   main.querySelector('#back').onclick = () => go('terminal');
   main.querySelector('#toStudio').onclick = () => go('rebalance');

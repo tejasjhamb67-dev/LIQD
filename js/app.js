@@ -106,3 +106,6 @@ export function render() {
 
 window.addEventListener('hashchange', render);
 render();
+
+// adopt newer cloud state if one exists (silent no-op without the API)
+import('./state.js').then(({ initSync }) => initSync().then(changed => { if (changed) render(); }));

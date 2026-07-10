@@ -105,8 +105,8 @@ LIQD ─────────────────────────
 | P0 | Wealth core (v2.1) | ✅ live |
 | P1 | Suite IA (10-product nav) · design maturation pass · Scenario Lab rebuilt as Risk Matrix | **this release** |
 | P2 | Terminal security pages · Screen (equity) · Universe→openable | **this release** |
-| P3 | Credit · Learn (tracks/XP) · Pulse (structured setups) · Circles · Strategies | **this release** |
-| P4 | Live market data feed, real broker OAuth, payments/KYC, backend (Supabase/Postgres), auth | next — needs backend |
+| P3 | Credit · Learn (tracks/XP) · Pulse (structured setups) · Circles · Strategies | ✅ live |
+| P4 | **Live market data (Yahoo proxy fns) ✅ · cloud state sync ✅ · shared Pulse feed ✅** (KV-gated) · device identity ✅ · OAuth/payments/broker APIs remain credential-gated | **partially live** |
 | P5 | Advisory console (B2B2C), Journals with verified track records, Loan circles | after P4 |
 
 **Deploy model:** static front-end on Vercel (current) → P4 adds a thin API layer (Vercel functions + Postgres) for auth, community persistence, and market-data proxy (NSE/BSE EOD + a quotes vendor). Community/Pulse/Circles run demo-grade on localStorage until then.
