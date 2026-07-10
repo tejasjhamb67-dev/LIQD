@@ -33,6 +33,7 @@ export const DEFAULTS = {
   learn: null,              // learn: { done, xp }
   pulse: [],                // pulse: user posts
   circles: [],              // circles joined
+  reviewRequested: null,    // advisory review queue date
 };
 
 export let S = load();

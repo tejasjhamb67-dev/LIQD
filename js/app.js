@@ -20,6 +20,8 @@ import { renderPulse } from './pages/pulse.js';
 import { renderUniverse } from './pages/universe.js';
 import { renderIntegrations } from './pages/integrations.js';
 import { renderAdvantage } from './pages/advantage.js';
+import { renderAdvisory } from './pages/advisory.js';
+import { renderHome, renderLegal } from './pages/home.js';
 
 const I = (d) => `<svg class="ni" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">${d}</svg>`;
 const ICONS = {
@@ -39,10 +41,13 @@ const ICONS = {
   universe: I('<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.6"/>'),
   integrations: I('<path d="M9 7H6a3 3 0 0 0 0 6h3M15 7h3a3 3 0 0 1 0 6h-3M8 10h8"/>'),
   advantage: I('<path d="M12 2 3 7v6c0 5 3.8 8.4 9 9 5.2-.6 9-4 9-9V7l-9-5z"/><path d="m8.5 12 2.5 2.5 4.5-5"/>'),
+  advisory: I('<circle cx="12" cy="8" r="3.4"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6"/>'),
   blueprint: I('<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>'),
 };
 
 const ROUTES = [
+  { hash: 'home', render: renderHome, hidden: true },
+  { hash: 'legal', render: renderLegal, hidden: true },
   { hash: 'overview', label: 'Overview', render: renderOverview, section: '01 · Wealth', gated: true },
   { hash: 'portfolio', label: 'Portfolio', render: renderPortfolio, gated: true },
   { hash: 'growth', label: 'Growth', render: renderGrowth, gated: true },
@@ -57,6 +62,7 @@ const ROUTES = [
   { hash: 'credit', label: 'Credit', render: renderCredit, section: '06–08 · Money & Members' },
   { hash: 'circles', label: 'Circles', render: renderCircles },
   { hash: 'pulse', label: 'Pulse', render: renderPulse },
+  { hash: 'advisory', label: 'Advisory', render: renderAdvisory, section: '10 · Advisory', gated: true },
   { hash: 'integrations', label: 'Integrations', render: renderIntegrations, section: 'Membership' },
   { hash: 'advantage', label: 'Why LIQD', render: renderAdvantage },
   { hash: 'blueprint', label: 'Blueprint', render: renderOnboarding },
@@ -70,7 +76,7 @@ export function go(hash) { location.hash = '#/' + hash; }
 function parseHash() {
   const raw = (location.hash || '').replace(/^#\//, '');
   const [head, ...rest] = raw.split('/');
-  return { head: head || (S.onboarded ? 'overview' : 'blueprint'), param: rest.join('/') };
+  return { head: head || (S.onboarded ? 'overview' : 'home'), param: rest.join('/') };
 }
 
 function shell(route) {
@@ -99,7 +105,7 @@ export function render() {
   const { head, param } = parseHash();
   let route = ROUTES.find(r => r.hash === head) || ROUTES[0];
   if (route.gated && !S.onboarded) route = ROUTES.find(r => r.hash === 'blueprint');
-  const navRoute = route.hidden ? ROUTES.find(r => r.hash === 'terminal') : route;
+  const navRoute = route.hidden ? ROUTES.find(r => r.hash === (route.hash === 'stock' ? 'terminal' : 'blueprint')) : route;
   const main = shell(navRoute);
   route.render(main, param);
   window.scrollTo(0, 0);

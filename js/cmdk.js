@@ -8,7 +8,7 @@ const PAGES = [
   ['Rebalancing Studio', 'rebalance', 'Wealth'], ['Risk Matrix', 'risk', 'Wealth'], ['Policy Statement (IPS)', 'ips', 'Wealth'],
   ['Terminal', 'terminal', 'Markets'], ['Screener', 'screen', 'Markets'], ['Universe & Assets', 'universe', 'Markets'],
   ['Strategies', 'strategies', 'Craft'], ['Learn', 'learn', 'Craft'],
-  ['Credit', 'credit', 'Money'], ['Circles', 'circles', 'Money'], ['Pulse', 'pulse', 'Members'],
+  ['Advisory', 'advisory', 'Wealth'], ['Credit', 'credit', 'Money'], ['Circles', 'circles', 'Money'], ['Pulse', 'pulse', 'Members'],
   ['Integrations', 'integrations', 'Membership'], ['Why LIQD', 'advantage', 'Membership'], ['Edit Blueprint', 'blueprint', 'Membership'],
 ];
 
@@ -21,7 +21,7 @@ function index() {
     { label: 'Check goal probability', k: 'Action', go: 'growth', keys: 'goal probability monte carlo projection' },
   ];
   // only the Wealth workspace is gated pre-onboarding; everything else is open
-  const GATED = new Set(['overview', 'portfolio', 'growth', 'rebalance', 'risk', 'ips']);
+  const GATED = new Set(['overview', 'portfolio', 'growth', 'rebalance', 'risk', 'ips', 'advisory']);
   if (!S.onboarded) return items.filter(i => !GATED.has(i.go));
   return items;
 }
